@@ -1,0 +1,104 @@
+You are a Senior Full Stack Developer + System Architect. Build and explain a complete full-stack web app:
+
+Project: Placelytics – Placement Readiness & Skill Gap Analytics System
+
+Goal:
+Web app to evaluate student placement readiness, calculate score (0–100), identify skill gaps, show dashboards, use Redis caching for performance, and generate PDF reports. Replaces manual Excel tracking.
+
+⚙️ Tech Stack
+
+Frontend: React, Bootstrap, Chart.js (react-chartjs-2), Axios, React Router
+Backend: Flask (Python)
+Database: PostgreSQL
+Cache: Redis (TTL-based)
+PDF: ReportLab
+
+🧠 Core Logic
+
+Score = (Marks×0.4) + (Aptitude×0.2) + (Skill×0.3) + (Projects×0.1)
+Range: 0–100
+
+🔴 Redis
+
+Key: student_score_<id>, TTL: 600s
+Flow: Check Redis → if hit return → else fetch DB → calculate → cache → return
+On update: delete key (cache invalidation)
+
+🏗 Architecture
+
+User → React Frontend → Flask API → PostgreSQL → Redis (cache)
+
+📁 Structure
+
+backend/
+
+app.py, config.py
+routes/ (auth.py, student.py, admin.py)
+services/ (scoring.py, redis_service.py)
+models/, utils/pdf_generator.py
+
+frontend/src/
+
+components (Navbar, Sidebar, ScoreCard, SkillGapCard, Charts)
+pages (Login, StudentDashboard, AdminDashboard, ProfileForm)
+services/api.js, App.js, index.js
+🎯 Features
+Role-based login (Student/Admin)
+Student profile input
+Readiness score + skill gap
+Student dashboard (score + charts)
+Admin dashboard (batch avg + top students)
+Redis caching + invalidation
+PDF report download
+🗄 Database
+
+students(id, name, marks, aptitude, skill_score, projects)
+
+🔗 APIs
+
+POST /api/login
+GET /api/student/<id>
+PUT /api/student/update/<id>
+GET /api/admin/dashboard
+GET /api/student/report/<id>
+
+📊 Frontend
+Bootstrap UI (clean, responsive)
+Charts (bar, pie, line)
+Axios API calls
+Routing (React Router)
+⚙️ Backend
+Flask modular APIs
+Scoring logic
+Redis integration
+Error handling
+📄 PDF
+
+Generate report (student ID + score) using ReportLab
+
+📘 Output Required
+Full working code (frontend + backend)
+All files (no skipping)
+Comments in code
+README + API docs
+Folder + file explanation
+Architecture + Redis explanation
+⚠️ Extra
+Handle errors (invalid data, DB, Redis)
+Basic security + validation
+Explain performance (Redis benefit)
+🚀 Future Scope
+ML placement prediction
+Resume analyzer
+Redis leaderboards
+Real-time analytics
+Cloud deployment
+🎯 Final Goal
+
+Project must:
+
+Run in Replit
+Be fully understandable
+Be ready for college submission + viva
+
+Start by building backend first, then frontend.
