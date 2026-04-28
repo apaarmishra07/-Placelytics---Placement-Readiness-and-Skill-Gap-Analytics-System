@@ -84,7 +84,7 @@ export default function StudentsPage() {
               <SelectContent>
                 <SelectItem value="all">All Batches</SelectItem>
                 {batches?.map(b => (
-                  <SelectItem key={b} value={b}>{b}</SelectItem>
+                  <SelectItem key={b.batch} value={b.batch}>{b.batch}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
