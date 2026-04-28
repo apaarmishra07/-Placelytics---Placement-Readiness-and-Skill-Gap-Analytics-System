@@ -3,20 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Placelytics – Placement Readiness & Skill Gap Analytics API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: students
+    description: Student profile and score operations
+  - name: admin
+    description: Admin dashboard and analytics
+  - name: skills
+    description: Skill catalog and gap analysis
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,436 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all students with computed readiness scores
+      parameters:
+        - in: query
+          name: batch
+          schema: { type: string }
+        - in: query
+          name: targetRole
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StudentWithScore" }
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Create a new student profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewStudentInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudentWithScore" }
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get a single student with score, skill gap, and history
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Student details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudentDetail" }
+    put:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student profile (recomputes score)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateStudentInput" }
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudentWithScore" }
+    delete:
+      operationId: deleteStudent
+      tags: [students]
+      summary: Delete a student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /students/{id}/score:
+    get:
+      operationId: getStudentScore
+      tags: [students]
+      summary: Get just the readiness score breakdown for a student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Score breakdown
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScoreBreakdown" }
+
+  /students/{id}/skill-gap:
+    get:
+      operationId: getStudentSkillGap
+      tags: [students]
+      summary: Get the skill gap analysis for the student's target role
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Skill gap
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SkillGap" }
+
+  /students/{id}/report:
+    get:
+      operationId: getStudentReportUrl
+      tags: [students]
+      summary: Get the URL for the downloadable PDF report
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Report URL
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportLink" }
+
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Aggregate analytics for the admin dashboard
+      responses:
+        "200":
+          description: Dashboard payload
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminDashboard" }
+
+  /admin/batches:
+    get:
+      operationId: listBatches
+      tags: [admin]
+      summary: List all batches with their averages
+      responses:
+        "200":
+          description: Batches
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BatchSummary" }
+
+  /admin/top-students:
+    get:
+      operationId: getTopStudents
+      tags: [admin]
+      summary: Top N students by readiness score
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 10 }
+      responses:
+        "200":
+          description: Top students
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StudentWithScore" }
+
+  /admin/score-distribution:
+    get:
+      operationId: getScoreDistribution
+      tags: [admin]
+      summary: Histogram of readiness scores in 10-point buckets
+      responses:
+        "200":
+          description: Distribution
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ScoreBucket" }
+
+  /admin/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [admin]
+      summary: Recent profile updates / additions
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 10 }
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ActivityItem" }
+
+  /skills/roles:
+    get:
+      operationId: listTargetRoles
+      tags: [skills]
+      summary: List target roles with required skills
+      responses:
+        "200":
+          description: Roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TargetRole" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    Student:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        batch: { type: string, description: "e.g. 2026-CSE-A" }
+        rollNumber: { type: string }
+        marks: { type: number, description: "Academic marks 0-100" }
+        aptitude: { type: number, description: "Aptitude test score 0-100" }
+        skillScore: { type: number, description: "Skill assessment 0-100" }
+        projects: { type: integer, description: "Number of completed projects" }
+        targetRole: { type: string }
+        currentSkills:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required:
+        [id, name, email, batch, rollNumber, marks, aptitude, skillScore, projects, targetRole, currentSkills, createdAt, updatedAt]
+
+    StudentWithScore:
+      allOf:
+        - $ref: "#/components/schemas/Student"
+        - type: object
+          properties:
+            score: { type: number, description: "Computed readiness score 0-100" }
+            readinessLevel:
+              type: string
+              enum: [ready, almost-ready, needs-improvement, critical]
+          required: [score, readinessLevel]
+
+    StudentDetail:
+      allOf:
+        - $ref: "#/components/schemas/StudentWithScore"
+        - type: object
+          properties:
+            breakdown: { $ref: "#/components/schemas/ScoreBreakdown" }
+            skillGap: { $ref: "#/components/schemas/SkillGap" }
+            recommendations:
+              type: array
+              items: { type: string }
+            reportUrl: { type: string }
+          required: [breakdown, skillGap, recommendations, reportUrl]
+
+    NewStudentInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string }
+        batch: { type: string }
+        rollNumber: { type: string }
+        marks: { type: number, minimum: 0, maximum: 100 }
+        aptitude: { type: number, minimum: 0, maximum: 100 }
+        skillScore: { type: number, minimum: 0, maximum: 100 }
+        projects: { type: integer, minimum: 0 }
+        targetRole: { type: string }
+        currentSkills:
+          type: array
+          items: { type: string }
+      required: [name, email, batch, rollNumber, marks, aptitude, skillScore, projects, targetRole, currentSkills]
+
+    UpdateStudentInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string }
+        batch: { type: string }
+        rollNumber: { type: string }
+        marks: { type: number, minimum: 0, maximum: 100 }
+        aptitude: { type: number, minimum: 0, maximum: 100 }
+        skillScore: { type: number, minimum: 0, maximum: 100 }
+        projects: { type: integer, minimum: 0 }
+        targetRole: { type: string }
+        currentSkills:
+          type: array
+          items: { type: string }
+
+    ScoreBreakdown:
+      type: object
+      properties:
+        marks: { type: number }
+        aptitude: { type: number }
+        skillScore: { type: number }
+        projects: { type: number, description: "Projects normalized 0-100" }
+        weightedMarks: { type: number }
+        weightedAptitude: { type: number }
+        weightedSkill: { type: number }
+        weightedProjects: { type: number }
+        total: { type: number }
+        readinessLevel:
+          type: string
+          enum: [ready, almost-ready, needs-improvement, critical]
+      required:
+        [marks, aptitude, skillScore, projects, weightedMarks, weightedAptitude, weightedSkill, weightedProjects, total, readinessLevel]
+
+    SkillGap:
+      type: object
+      properties:
+        targetRole: { type: string }
+        requiredSkills:
+          type: array
+          items: { type: string }
+        currentSkills:
+          type: array
+          items: { type: string }
+        matchedSkills:
+          type: array
+          items: { type: string }
+        missingSkills:
+          type: array
+          items: { type: string }
+        coverage: { type: number, description: "Percentage 0-100" }
+      required: [targetRole, requiredSkills, currentSkills, matchedSkills, missingSkills, coverage]
+
+    AdminDashboard:
+      type: object
+      properties:
+        totalStudents: { type: integer }
+        averageScore: { type: number }
+        readyCount: { type: integer }
+        almostReadyCount: { type: integer }
+        needsImprovementCount: { type: integer }
+        criticalCount: { type: integer }
+        topStudents:
+          type: array
+          items: { $ref: "#/components/schemas/StudentWithScore" }
+        batchAverages:
+          type: array
+          items: { $ref: "#/components/schemas/BatchSummary" }
+        scoreDistribution:
+          type: array
+          items: { $ref: "#/components/schemas/ScoreBucket" }
+        roleDistribution:
+          type: array
+          items: { $ref: "#/components/schemas/RoleSummary" }
+      required:
+        [totalStudents, averageScore, readyCount, almostReadyCount, needsImprovementCount, criticalCount, topStudents, batchAverages, scoreDistribution, roleDistribution]
+
+    BatchSummary:
+      type: object
+      properties:
+        batch: { type: string }
+        studentCount: { type: integer }
+        averageScore: { type: number }
+        averageMarks: { type: number }
+        averageAptitude: { type: number }
+        averageSkill: { type: number }
+        readyCount: { type: integer }
+      required: [batch, studentCount, averageScore, averageMarks, averageAptitude, averageSkill, readyCount]
+
+    ScoreBucket:
+      type: object
+      properties:
+        bucket: { type: string, description: "e.g. 70-79" }
+        min: { type: integer }
+        max: { type: integer }
+        count: { type: integer }
+      required: [bucket, min, max, count]
+
+    RoleSummary:
+      type: object
+      properties:
+        role: { type: string }
+        studentCount: { type: integer }
+        averageScore: { type: number }
+      required: [role, studentCount, averageScore]
+
+    ActivityItem:
+      type: object
+      properties:
+        id: { type: integer }
+        studentId: { type: integer }
+        studentName: { type: string }
+        action: { type: string, enum: [created, updated] }
+        score: { type: number }
+        timestamp: { type: string, format: date-time }
+      required: [id, studentId, studentName, action, score, timestamp]
+
+    TargetRole:
+      type: object
+      properties:
+        role: { type: string }
+        requiredSkills:
+          type: array
+          items: { type: string }
+        description: { type: string }
+      required: [role, requiredSkills, description]
+
+    ReportLink:
+      type: object
+      properties:
+        url: { type: string }
+        filename: { type: string }
+      required: [url, filename]
