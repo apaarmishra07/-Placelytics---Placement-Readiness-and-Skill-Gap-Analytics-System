@@ -189,6 +189,8 @@ pnpm run typecheck	Run TypeScript checks
 pnpm --filter @workspace/api-server run dev	Start backend
 pnpm --filter @workspace/mockup-sandbox run dev	Start sandbox
 pnpm --filter @workspace/placelytics run dev	Start dashboard
+
+
 📌 Notes
 Built as a private development monorepo
 Uses pnpm workspace architecture
@@ -205,6 +207,6 @@ Rapid frontend/backend experimentation
 
 
 Development  / Members
-Apaar Mishra -  EN23Cs301178
-Ansh Mishra  -  EN23Cs301153
-Aprajita Singh - EN23Cs301153
+Apaar Mishra -  EN23CS301178
+Ansh Mishra  -  EN23CS301153
+Aprajita Singh - EN23CS301153
