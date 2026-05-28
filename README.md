@@ -42,8 +42,7 @@ pg-mem (fallback DB)
 React
 Vite
 Tailwind CSS
-Radix UI
-Recharts
+charts js
 
 🔹 Tooling
 pnpm Workspaces
